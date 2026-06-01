@@ -9,13 +9,13 @@ under the Spiked Covariance Model framework.
 
 We characterize a **phase diagram** over (κ, ν) — signal strength and nuisance correlation —
 with four regimes (Neither / CA only / CP only / Both). We validate our theoretical analysis
-on different experiments: synthetic vision datasets, real imapge-caption dataset, and real astrophysical multimodal dataset.
+on different experiments: synthetic vision datasets, real image-caption dataset, and real astrophysical multimodal dataset.
 
 ## Interactive demo
 
 The Colab notebook lets you explore CA vs CP recovery interactively with sliders:
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/anonymous-submission/multimodal-ML/blob/main/notebooks/interactive_linear_experiment_colab.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/IlayMalinyak/mm_align_vs_pred/blob/main/notebooks/interactive_linear_experiment_colab.ipynb)
 
 
 ## Install
