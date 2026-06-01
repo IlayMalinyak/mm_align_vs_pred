@@ -1,0 +1,99 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+env/
+venv/
+ENV/
+.venv/
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Pytest and coverage
+.cache
+.pytest_cache/
+.coverage
+coverage.xml
+*.cover
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Machine Learning specific directories (adjust as needed)
+data/
+models/
+checkpoints/
+src/dsprites/images/
+src/shapes3d/images/
+*.h5
+
+# LaTeX intermediate and build files
+*.aux
+*.bbl
+*.blg
+*.brf
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.nav
+*.snm
+*.vrb
+*.bcf
+*.run.xml
+*.lof
+*.lot
+*.maf
+*.mtc*
+*.pdf
+
+# LaTeX build directories (if you compile in a separate folder)
+build/
+output/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Codex agent instructions (keep local, don't sync)
+AGENTS.md
+
+src/logs/figures/CLAUDE.md
+paper/
+CLAUDE.md
+
+# Generated outputs — never commit
+src/logs/
+checkpoints/
+*.png
+*.pdf
+*.npz
+*.npy
+*.csv
+*.h5
+*.parquet
+__pycache__/
+*.pyc
+.claude/
