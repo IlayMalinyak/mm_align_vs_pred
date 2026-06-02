@@ -103,7 +103,7 @@ See [`src/astro/README.md`](src/astro/README.md) for full setup.
 
 ## Phase Diagram Estimation
 
-To estimate (κ, ν) for your own dataset and predict which method will work better:
+To estimate recovery regimes for your own dataset:
 ```bash
 python src/analyze_phase_diagram.py --modality_x /path/to/X.npy --modality_y /path/to/Y.npy
 ```
@@ -121,7 +121,7 @@ pytest tests/
 ## Citation
 
 ```bibtex
-@article{TODO,
+@article{,
   title   = {When to Align, When to Predict? A Phase Diagram for Multimodal Self-Supervised Learning},
   author  = {Kamai, Ilay and Van Assel, Hugues and Regev, Aviv and Perets, Hagai B. and Balestriero, Randall},
   journal = {arXiv preprint},
