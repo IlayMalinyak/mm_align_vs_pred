@@ -351,21 +351,6 @@ The resulting phase diagram partitions multimodal problems into four regimes: Bo
 <!-- ── METHOD: PHASE ESTIMATION ──────────────────────────────────── -->
 <section>
   <div class="container">
-    <h2>Estimating Your Phase</h2>
-    <p>
-      Given paired embeddings from any two modalities, our
-      <strong>direct-spectral estimator</strong> computes Δ<sub>CA</sub> and Δ<sub>CP</sub>
-      directly from the CCA spectrum and the regression matrix A = Σ<sub>yx</sub>Σ<sub>xx</sub><sup>−½</sup>,
-      without requiring labelled data or a learned encoder.
-    </p>
-    <br/>
-    <pre class="bibtex-box"># Estimate which method will work better on your data
-python src/analyze_phase_diagram.py \
-    --modality_x /path/to/X.npy \
-    --modality_y /path/to/Y.npy \
-    --labels     /path/to/labels.npy</pre>
-    <br/>
-    <p>
       Try it interactively in the
       <a href="https://colab.research.google.com/github/IlayMalinyak/mm_align_vs_pred/blob/main/notebooks/interactive_linear_experiment_colab.ipynb" target="_blank">
         Colab notebook
