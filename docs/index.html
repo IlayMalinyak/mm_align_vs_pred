@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>When to Align, When to Predict?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="static/css/style.css" />
+</head>
+<body>
+
+<!-- ── HERO ──────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="container">
+    <h1>When to Align, When to Predict?</h1>
+    <p class="subtitle">A Phase Diagram for Multimodal Self-Supervised Learning</p>
+
+    <p class="authors">
+      Ilay Kamai<sup>1*</sup> &nbsp;·&nbsp;
+      Hugues Van Assel<sup>2</sup> &nbsp;·&nbsp;
+      Aviv Regev<sup>2</sup> &nbsp;·&nbsp;
+      Hagai B. Perets<sup>1</sup> &nbsp;·&nbsp;
+      Randall Balestriero<sup>3,4</sup>
+    </p>
+    <p class="affiliations">
+      <sup>1</sup>Technion &nbsp;·&nbsp;
+      <sup>2</sup>Genentech &nbsp;·&nbsp;
+      <sup>3</sup>Brown University &nbsp;·&nbsp;
+      <sup>4</sup>Meta AI, FAIR
+      <br/>
+      <sup>*</sup>Corresponding author:
+      <a href="mailto:ilay.kamai@campus.technion.ac.il" style="color:#64748b;">ilay.kamai@campus.technion.ac.il</a>
+    </p>
+
+    <div class="badges">
+      <a class="badge badge-paper" href="TODO" target="_blank">
+        📄 Paper
+      </a>
+      <a class="badge badge-code" href="https://github.com/IlayMalinyak/mm_align_vs_pred" target="_blank">
+        💻 Code
+      </a>
+      <a class="badge badge-hf" href="https://huggingface.co/datasets/Ilayk/mm_align_vs_pred" target="_blank">
+        🤗 Data & Models
+      </a>
+      <a class="badge badge-colab" href="https://colab.research.google.com/github/IlayMalinyak/mm_align_vs_pred/blob/main/notebooks/interactive_linear_experiment_colab.ipynb" target="_blank">
+        ▶ Interactive Demo
+      </a>
+    </div>
+
+    <div class="teaser">
+      <img src="static/images/phase_diagram_sweep.gif" alt="Phase diagram animation sweeping noise parameters" />
+      <p class="teaser-caption">
+        As target-modality noise grows, the CP region collapses — Cross-Prediction gets trapped
+        reconstructing noise instead of signal. Cross-Alignment (CA) is immune to this
+        <em>Variance Trap</em>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ── ABSTRACT ──────────────────────────────────────────────────── -->
+<section>
+  <div class="container">
+    <h2>Abstract</h2>
+    <div class="abstract-box">
+      Cross-modal alignment (CA) and cross-modal prediction (CP) are the dominant paradigms for multimodal representation learning, yet there is no systematic understanding of when each succeeds, when each fails, and when cross-modal 
+training helps at all --- a gap that leaves practitioners, especially in scientific domains like biomedicine or astrophysics, with heterogeneous instruments and multiple levels of organization and measurement, unable to diagnose why standard methods
+ underperform the best single modality. We develop a unified linear framework that addresses both questions. Under a spiked signal-plus-noise model with structured cross-modal nuisance correlation, we derive separation ratios for both objectives that
+  expose complementary failure modes: alignment whitens each modality and fails when nuisance is strongly correlated across views; prediction encodes whatever is cross-predictable through a one-sided whitening, with recovery governed by source-modality quality.
+The resulting phase diagram partitions multimodal problems into four regimes: Both, CA only, CP only, and Neither. We present a data-driven procedure to locate real-world datasets in this diagram using a small labeled subsample, identifying the preferred objective
+ and prediction direction before any cross-modal training. Experiments on synthetic data, stereo-vision benchmarks, image--caption pairs, and real astrophysical data validate the predictions in the nonlinear regime, including the Neither regime where cross-modal training
+  is actively harmful. Our framework lets practitioners diagnose their multimodal problem and choose the right objective before committing to training.
+    </div>
+  </div>
+</section>
+
+<!-- ── OVERVIEW ──────────────────────────────────────────────────── -->
+<section>
+  <div class="container">
+    <h2>Phase Diagram Overview</h2>
+    <div class="overview-grid">
+      <div>
+        <p>
+          We characterize recovery under the <strong>Spiked Covariance Model</strong>
+          via two separation ratios, Δ<sub>CA</sub> and Δ<sub>CP</sub>,
+          derived directly from the spectra of the CCA matrix and regression matrix
+          (the <em>direct-spectral method</em>).
+        </p>
+        <br/>
+        <table class="phase-table">
+          <thead>
+            <tr>
+              <th>Region</th>
+              <th>CA recovers?</th>
+              <th>CP recovers?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Both</strong></td>        <td class="tick">✓</td><td class="tick">✓</td></tr>
+            <tr><td><strong>CA only</strong></td>     <td class="tick">✓</td><td class="cross">✗</td></tr>
+            <tr><td><strong>CP only</strong></td>     <td class="cross">✗</td><td class="tick">✓</td></tr>
+            <tr><td><strong>Neither</strong></td>     <td class="cross">✗</td><td class="cross">✗</td></tr>
+          </tbody>
+        </table>
+        <br/>
+        <p>
+          The <strong>Variance Trap</strong> (Corollary 3.5): when nuisance variance
+          γ̃<sub>y</sub> is large, CP must reconstruct high-variance noise,
+          drowning the shared signal. CA aligns directions only and is immune.
+        </p>
+      </div>
+      <div>
+        <img src="static/images/phase_diagram.png" alt="Phase diagram with CA and CP recovery boundaries" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SYNTHETIC RESULTS ─────────────────────────────────────────── -->
+<section>
+  <div class="container">
+    <h2>Synthetic Experiments</h2>
+    <p>
+      We validate on <strong>dSprites</strong> and <strong>Shapes3D</strong> stereo-view datasets,
+      sweeping jitter (de-alignment) and noise parameters to move across the phase diagram.
+      CA (VICReg) and CP (MSE reconstruction) are trained from scratch; downstream accuracy
+      is measured via frozen linear probe.
+    </p>
+
+    <div class="fig-block">
+      <img src="static/images/combined_synthetic_comparison_100000.png"
+           alt="CA vs CP accuracy across dSprites and Shapes3D configurations" />
+      <p class="fig-caption">
+        <strong>CA vs. CP performance</strong> across all (jitter, noise) configurations
+        on dSprites and Shapes3D (100k samples). Each cell shows linear probe accuracy;
+        winners match phase diagram predictions.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ── REAL-WORLD RESULTS ─────────────────────────────────────────── -->
+<section>
+  <div class="container">
+    <h2>Real-World Experiments</h2>
+    <div class="results-grid">
+
+      <div>
+        <h3>COCO (Image–Caption)</h3>
+        <div class="fig-block">
+          <img src="static/images/coco_style_accuracy.png"
+               alt="COCO style-noise experiment results" />
+        </div>
+        <p class="fig-caption">
+          Image encoder trained with CA vs. CP on COCO, with increasing
+          style-transform noise on the image modality.
+          Phase estimation predicts the <em>CP only</em> regime — confirmed empirically.
+        </p>
+      </div>
+
+      <div>
+        <h3>Astrophysics (LAMOST × Kepler &amp; TESS)</h3>
+        <div class="fig-block">
+          <img src="static/images/phase_diagnostics.png"
+               alt="Astrophysical phase diagnostics: CCA and CP spectra" />
+          <p class="fig-caption">
+            CCA and regression-matrix spectra for LAMOST × Kepler (top) and LAMOST × TESS (bottom).
+            Signal (green) and nuisance (pink) components classified by elbow detection on the cumulative R² curve.
+          </p>
+        </div>
+
+        <div style="overflow-x:auto; margin-top:24px;">
+          <table class="astro-table">
+            <caption>
+              Cross-modal results, mean ± std over 5 seeds. Best per row in <strong>bold</strong>.<br/>
+              <em>Kepler (Both, Δ̂<sub>CA</sub>=1.13, Δ̂<sub>CP</sub>=2.22):</em>
+              at least one cross-modal method matches or beats the best unimodal baseline on every target.<br/>
+              <em>TESS (Neither, Δ̂<sub>CA</sub>, Δ̂<sub>CP</sub> &lt; 1):</em>
+              no cross-modal method beats LAMOST-only on any target.
+            </caption>
+            <thead>
+              <tr>
+                <th>Task</th>
+                <th>CA</th>
+                <th>CP</th>
+                <th>CP<sub>rev</sub></th>
+                <th>LAMOST</th>
+                <th>Photometry</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="section-header">
+                <td colspan="6">LAMOST × Kepler — <em>Both</em> regime</td>
+              </tr>
+              <tr>
+                <td>Binarity (bal. acc.)</td>
+                <td>0.802±0.009</td>
+                <td><strong>0.814±0.006</strong></td>
+                <td>0.751±0.004</td>
+                <td><strong>0.814</strong></td>
+                <td>0.731</td>
+              </tr>
+              <tr>
+                <td>log <em>g</em> (R²)</td>
+                <td>0.956±0.003</td>
+                <td><strong>0.976±0.001</strong></td>
+                <td>0.639±0.004</td>
+                <td><strong>0.977</strong></td>
+                <td>0.542</td>
+              </tr>
+              <tr>
+                <td>Age (R²)</td>
+                <td><strong>0.620±0.001</strong></td>
+                <td>0.434±0.006</td>
+                <td>0.497±0.039</td>
+                <td>0.431</td>
+                <td>0.470</td>
+              </tr>
+              <tr class="section-header">
+                <td colspan="6">LAMOST × TESS — <em>Neither</em> regime</td>
+              </tr>
+              <tr>
+                <td>Binarity (bal. acc.)</td>
+                <td>0.756±0.022</td>
+                <td>0.763±0.011</td>
+                <td>0.626±0.010</td>
+                <td><strong>0.779</strong></td>
+                <td>0.604</td>
+              </tr>
+              <tr>
+                <td>log <em>g</em> (R²)</td>
+                <td>0.929±0.005</td>
+                <td>0.939±0.001</td>
+                <td>−0.312±0.001</td>
+                <td><strong>0.942</strong></td>
+                <td>−0.312</td>
+              </tr>
+              <tr>
+                <td>Age (R²)</td>
+                <td>0.431±0.029</td>
+                <td>0.396±0.064</td>
+                <td>−0.072±0.004</td>
+                <td><strong>0.503</strong></td>
+                <td>−0.037</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── METHOD: PHASE ESTIMATION ──────────────────────────────────── -->
+<section>
+  <div class="container">
+    <h2>Estimating Your Phase</h2>
+    <p>
+      Given paired embeddings from any two modalities, our
+      <strong>direct-spectral estimator</strong> computes Δ<sub>CA</sub> and Δ<sub>CP</sub>
+      directly from the CCA spectrum and the regression matrix A = Σ<sub>yx</sub>Σ<sub>xx</sub><sup>−½</sup>,
+      without requiring labelled data or a learned encoder.
+    </p>
+    <br/>
+    <pre class="bibtex-box"># Estimate which method will work better on your data
+python src/analyze_phase_diagram.py \
+    --modality_x /path/to/X.npy \
+    --modality_y /path/to/Y.npy \
+    --labels     /path/to/labels.npy</pre>
+    <br/>
+    <p>
+      Try it interactively in the
+      <a href="https://colab.research.google.com/github/IlayMalinyak/mm_align_vs_pred/blob/main/notebooks/interactive_linear_experiment_colab.ipynb" target="_blank">
+        Colab notebook
+      </a>.
+    </p>
+  </div>
+</section>
+
+<!-- ── CITATION ───────────────────────────────────────────────────── -->
+<section>
+  <div class="container">
+    <h2>Citation</h2>
+    <pre class="bibtex-box">@article{TODO,
+  title   = {When to Align, When to Predict? A Phase Diagram for Multimodal Self-Supervised Learning},
+  author  = {Kamai, Ilay and Van Assel, Hugues and Regev, Aviv and Perets, Hagai B. and Balestriero, Randall},
+  journal = {arXiv preprint},
+  year    = {2026}
+}</pre>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────────────────────────── -->
+<footer>
+  <div class="container">
+    <p>
+      <a href="https://github.com/IlayMalinyak/mm_align_vs_pred" target="_blank">GitHub</a>
+      &nbsp;·&nbsp;
+      <a href="https://huggingface.co/datasets/Ilayk/mm_align_vs_pred" target="_blank">HuggingFace</a>
+      &nbsp;·&nbsp;
+      Website template inspired by <a href="https://nerfies.github.io" target="_blank">Nerfies</a>
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
