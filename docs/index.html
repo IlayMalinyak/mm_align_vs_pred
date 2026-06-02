@@ -8,6 +8,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="static/css/style.css" />
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['\\(','\\)']],
+        displayMath: [['\\[','\\]']],
+        tags: 'ams',
+        macros: {
+          DCA: '\\Delta_{\\mathrm{CA}}',
+          DCP: '\\Delta_{\\mathrm{CP}}',
+          Ab:  '\\bar{A}'
+        }
+      },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
 </head>
 <body>
 
@@ -71,19 +87,80 @@ The resulting phase diagram partitions multimodal problems into four regimes: Bo
   </div>
 </section>
 
-<!-- ── OVERVIEW ──────────────────────────────────────────────────── -->
+<!-- ── APPROACH ───────────────────────────────────────────────────── -->
 <section>
   <div class="container">
-    <h2>Phase Diagram Overview</h2>
-    <div class="overview-grid">
+    <h2>Approach</h2>
+
+    <p>
+      We study two objectives for multimodal representation learning. The first is <em>cross-alignment</em> (CA),
+      which aligns paired samples in a shared latent space. The second is <em>cross-prediction</em> (CP),
+      which predicts one modality from the other through an encoder–decoder factorization. Both are formalized below:
+    </p>
+    <br/>
+    <p>
+      Let \(f_X : \mathbb{R}^{d_x} \to \mathbb{R}^k\) and \(f_Y : \mathbb{R}^{d_y} \to \mathbb{R}^k\) be encoders
+      producing latent codes \(\mathbf{z}_x^{(i)} := f_X(\mathbf{x}_i)\) and \(\mathbf{z}_y^{(i)} := f_Y(\mathbf{y}_i)\)
+      in a shared latent space of dimension \(k\). Let \(f_D : \mathbb{R}^k \to \mathbb{R}^{d_y}\) be a decoder.
+      The two objectives are
+    </p>
+    <div class="math-block">
+      \[
+      \begin{aligned}
+      \text{(CA)} \quad &\min_{f_X,\, f_Y} \;
+        \tfrac{1}{n} \textstyle\sum_i \| f_X(\mathbf{x}_i) - f_Y(\mathbf{y}_i) \|_2^2
+        \quad \text{s.t.} \quad
+        \tfrac{1}{n} \textstyle\sum_i f_X(\mathbf{x}_i)\, f_Y(\mathbf{y}_i)^\top = \mathbf{I}_k,
+      \\[6pt]
+      \text{(CP)} \quad &\min_{f_X,\, f_D} \;
+        \tfrac{1}{n} \textstyle\sum_i \| \mathbf{y}_i - f_D(f_X(\mathbf{x}_i)) \|_2^2.
+      \end{aligned}
+      \]
+    </div>
+    <p>
+      With linear encoders \(f_X(\mathbf{x}) = W\mathbf{x}\), \(f_Y(\mathbf{y}) = V\mathbf{y}\) for CA, and
+      linear encoder \(f_X(\mathbf{x}) = E\mathbf{x}\) and decoder \(f_D(\mathbf{z}) = D\mathbf{z}\) for CP,
+      both objectives admit closed-form solutions expressible through the SVDs of two modality-coupling matrices:
+    </p>
+    <div class="math-block">
+      \[
+      C := \Sigma_{xx}^{-1/2}\, \Sigma_{xy}\, \Sigma_{yy}^{-1/2}, \qquad
+      A := \Sigma_{yx}\, \Sigma_{xx}^{-1/2},
+      \]
+    </div>
+    <p>
+      where \(\Sigma_{xx}, \Sigma_{yy}, \Sigma_{xy}\) denote the (population) (cross-)covariances.
+    </p>
+    <br/>
+    <p>
+      To analyze recovery, we posit a signal-plus-noise model in which each modality decomposes into \(k\) shared
+      signal coordinates and \(d - k\) modality-specific nuisance coordinates. Under this model, the singular values
+      of \(C\) and \(A\) decompose cleanly into signal and nuisance contributions, yielding recovery conditions for
+      each objective.
+    </p>
+    <p>
+      The singular values of \(C\) and \(A\) split into signal values \(\{\rho_i,\,\tau_i\}_{i=1}^{k}\) and nuisance
+      values \(\{\nu_j,\,\xi_j\}_{j=1}^{d-k}\), given by
+    </p>
+    <div class="math-block">
+      \[
+      \rho_i = \frac{\kappa_i^2}{\sqrt{(\kappa_i^2 + \gamma_i^x)(\kappa_i^2 + \gamma_i^y)}},
+      \quad
+      \tau_i = \frac{\kappa_i^2}{\sqrt{\kappa_i^2 + \gamma_i^x}},
+      \quad
+      \nu_j = \frac{\eta_j}{\sqrt{\tilde{\gamma}_j^x\, \tilde{\gamma}_j^y}},
+      \quad
+      \xi_j = \frac{\eta_j}{\sqrt{\tilde{\gamma}_j^x}}.
+      \]
+    </div>
+    <p>
+      CA (resp. CP) recovers the shared signal subspace whenever its signal singular values exceed its nuisance
+      singular values. Defining the <em>separation ratios</em>, we analyze those separation ratios and define
+      4 different recovery regimes — Both, CP only, CA only, and Neither — as described in the following table:
+    </p>
+
+    <div class="overview-grid" style="margin-top:32px; align-items:center;">
       <div>
-        <p>
-          We characterize recovery under the <strong>Spiked Covariance Model</strong>
-          via two separation ratios, Δ<sub>CA</sub> and Δ<sub>CP</sub>,
-          derived directly from the spectra of the CCA matrix and regression matrix
-          (the <em>direct-spectral method</em>).
-        </p>
-        <br/>
         <table class="phase-table">
           <thead>
             <tr>
@@ -93,10 +170,10 @@ The resulting phase diagram partitions multimodal problems into four regimes: Bo
             </tr>
           </thead>
           <tbody>
-            <tr><td><strong>Both</strong></td>        <td class="tick">✓</td><td class="tick">✓</td></tr>
-            <tr><td><strong>CA only</strong></td>     <td class="tick">✓</td><td class="cross">✗</td></tr>
-            <tr><td><strong>CP only</strong></td>     <td class="cross">✗</td><td class="tick">✓</td></tr>
-            <tr><td><strong>Neither</strong></td>     <td class="cross">✗</td><td class="cross">✗</td></tr>
+            <tr><td><strong>Both</strong></td>    <td class="tick">✓</td><td class="tick">✓</td></tr>
+            <tr><td><strong>CA only</strong></td> <td class="tick">✓</td><td class="cross">✗</td></tr>
+            <tr><td><strong>CP only</strong></td> <td class="cross">✗</td><td class="tick">✓</td></tr>
+            <tr><td><strong>Neither</strong></td> <td class="cross">✗</td><td class="cross">✗</td></tr>
           </tbody>
         </table>
       </div>
@@ -104,6 +181,11 @@ The resulting phase diagram partitions multimodal problems into four regimes: Bo
         <img src="static/images/phase_diagram.png" alt="Phase diagram with CA and CP recovery boundaries" />
       </div>
     </div>
+    <p>
+      Each method shine and fall under different scenarios: CA is symmetric and preferable when modality-specific noise is large or uncertain. CP is assymetric, requires the correct source-target direction, and is preferable when signal is strong and the modality-specific noise is weak.
+      <br/>
+      Importatnly, the Neither regime is a carachteristic of real world problems with complementary modaitlies, and low signal-to-noise ratio. This regime requires novel alignment methods, beyond simple CA or CP.
+    </p>
   </div>
 </section>
 
@@ -138,9 +220,8 @@ The resulting phase diagram partitions multimodal problems into four regimes: Bo
       <img src="static/images/coco_style_accuracy.png"
            alt="COCO style-noise experiment results" />
       <p class="fig-caption">
-        Image encoder trained with CA vs. CP on COCO, with increasing
-        style-transform noise on the image modality.
-        Phase estimation predicts the <em>CP only</em> regime — confirmed empirically.
+        Top-1 accuracy vs. image style transform strength for MS-COCO experiment. CP shows an asymmetric nature: prediction of image from text results in similar performance as CA but prediction of text
+         from an image results in much better performance. Both approaches converge to the same accuracy when image noise is high.
       </p>
     </div>
   </div>
@@ -153,11 +234,17 @@ The resulting phase diagram partitions multimodal problems into four regimes: Bo
 
     <table class="astro-table">
       <caption>
-        Cross-modal results, mean ± std over 5 seeds. Best per row in <strong>bold</strong>.<br/>
-        <em>Kepler (Both, Δ̂<sub>CA</sub>=1.13, Δ̂<sub>CP</sub>=2.22):</em>
-        at least one cross-modal method matches or beats the best unimodal baseline on every target.<br/>
-        <em>TESS (Neither, Δ̂<sub>CA</sub>, Δ̂<sub>CP</sub> &lt; 1):</em>
-        no cross-modal method beats LAMOST-only on any target.
+        Astrophysical cross-modal results, mean ± std over 5 seeds.
+        Best per row in <strong>bold</strong> (ties within seed std co-bolded).
+        <em>Kepler (Both, \(\hat{\DCA}{=}1.13\), \(\hat{\DCP}{=}2.22\)):</em> at least
+        one cross-modal method matches or beats the best unimodal baseline on
+        every target; CP preserves LAMOST's ceiling where LAMOST dominates,
+        CA captures photometric signal where LAMOST is weak.
+        <em>TESS (Neither, \(\hat{\DCA}, \hat{\DCP} < 1\)):</em> no cross-modal
+        method beats LAMOST-only on any target. CP<sub>rev</sub> (photometry → spectra) fails on tasks where spectra
+        carry the more direct signal (\(\log g\), binarity), but outperforms forward
+        CP on age, where photometric rotation provides a more direct gyrochronological
+        signal — the same source-quality principle in both directions.
       </caption>
       <thead>
         <tr>
@@ -231,8 +318,21 @@ The resulting phase diagram partitions multimodal problems into four regimes: Bo
       <img src="static/images/phase_diagnostics.png"
            alt="Astrophysical phase diagnostics: CCA and CP spectra" />
       <p class="fig-caption">
-        CCA and regression-matrix spectra for LAMOST × Kepler (top) and LAMOST × TESS (bottom).
-        Signal (green) and nuisance (pink) components classified by elbow detection on the cumulative R² curve.
+        Each panel shows the sorted singular values (gray bars, left axis) and
+        per-component \(R^2\) against \(\log g\) (teal line, right axis) used by our
+        phase estimation algorithm to classify components as signal (green shading)
+        or nuisance (red shading). Dashed horizontal line: nuisance floor
+        \(\max_j \hat{\nu}_j\) (CCA panels) or \(\max_j \hat{\xi}_j\) (\(\Ab\)-SVD panels);
+        \(\hat{\Delta} > 1\) iff every classified signal singular value exceeds the nuisance floor.
+        <strong>Top:</strong> LAMOST × Kepler — both decompositions have signal components above the nuisance floor
+        (\(\hat{\DCA} = 1.13\), \(\hat{\DCP} = 2.22\); Both regime).
+        <strong>Bottom:</strong> LAMOST × TESS — no CCA component predicts \(\log g\) above noise
+        (\(R^2 \approx 0\) across all components, zero signal detected); the
+        \(\Ab\)-SVD has one candidate signal component but below the nuisance floor.
+        Both ratios fall below one (Neither regime). The contrast between the two
+        rows — same LAMOST encoder, same protocol, different photometric
+        instrument — shows that instrument quality determines the
+        signal–nuisance separation and hence the regime placement.
       </p>
     </div>
   </div>
