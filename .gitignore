@@ -83,6 +83,8 @@ AGENTS.md
 src/logs/figures/CLAUDE.md
 paper/
 CLAUDE.md
+hf_token.txt
+upload_to_hf.py
 
 # Generated outputs — never commit
 src/logs/
