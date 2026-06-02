@@ -134,9 +134,7 @@ The resulting phase diagram partitions multimodal problems into four regimes: Bo
     <br/>
     <p>
       To analyze recovery, we posit a signal-plus-noise model in which each modality decomposes into \(k\) shared
-      signal coordinates and \(d - k\) modality-specific nuisance coordinates. Under this model, the singular values
-      of \(C\) and \(A\) decompose cleanly into signal and nuisance contributions, yielding recovery conditions for
-      each objective.
+      signal coordinates and \(d - k\) modality-specific nuisance coordinates.
     </p>
     <p>
       The singular values of \(C\) and \(A\) split into signal values \(\{\rho_i,\,\tau_i\}_{i=1}^{k}\) and nuisance
@@ -204,9 +202,21 @@ The resulting phase diagram partitions multimodal problems into four regimes: Bo
       <img src="static/images/combined_synthetic_comparison_100000.png"
            alt="CA vs CP accuracy across dSprites and Shapes3D configurations" />
       <p class="fig-caption">
-        <strong>CA vs. CP performance</strong> across all (jitter, noise) configurations
-        on dSprites and Shapes3D (100k samples). Each cell shows linear probe accuracy;
-        winners match phase diagram predictions.
+        Linear probe accuracy vs. nuisance alignment \(\nu_{\max} = 1 - \sigma_{\text{jitter}}\).
+        <strong>Left:</strong> Stereo-dSprites (3-class, grayscale, 100k samples).
+        <strong>Right:</strong> Stereo-3DShapes (4-class, RGB, 100k samples).
+        In both settings, color represents weak noise levels. In both panels, the trade-off between the methods is clearly seen. CA (solid, circles) peaks at
+        moderate-to-low alignment and collapses at full alignment; CP (dashed, squares) shows the opposite pattern.
+        The crossover at \(\nu_{\max} \approx 0.8\) is consistent across datasets. Lower absolute ceilings in 3DShapes reflect the harder discrimination task.
+      </p>
+    </div>
+    <div class="fig-block">
+      <img src="static/images/combined_umaps_dsprites.png"
+           alt="dSprites UMAP embeddings" />
+      <p class="fig-caption">
+        UMAP embeddings of learned representations of the stereo-dSprites experiment (color = shape, intensity = position). From left to right: CA with aligned noise (\(\sigma_{\text{jitter}}=0\)),
+        CA with misaligned noise (\(\sigma_{\text{jitter}}=0.5\)), CP with aligned noise, and CP with misaligned noise. All experiments have the same modality-specific noise (\(\sigma_{\text{noise}}=0.5\)).
+        Each method succeeds exactly where the other fails, and on failures, the models learn the nuisance.
       </p>
     </div>
   </div>
