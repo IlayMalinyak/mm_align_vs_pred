@@ -51,11 +51,6 @@
 
     <div class="teaser">
       <img src="static/images/phase_diagram_sweep.gif" alt="Phase diagram animation sweeping noise parameters" />
-      <p class="teaser-caption">
-        As target-modality noise grows, the CP region collapses — Cross-Prediction gets trapped
-        reconstructing noise instead of signal. Cross-Alignment (CA) is immune to this
-        <em>Variance Trap</em>.
-      </p>
     </div>
   </div>
 </section>
@@ -104,12 +99,6 @@ The resulting phase diagram partitions multimodal problems into four regimes: Bo
             <tr><td><strong>Neither</strong></td>     <td class="cross">✗</td><td class="cross">✗</td></tr>
           </tbody>
         </table>
-        <br/>
-        <p>
-          The <strong>Variance Trap</strong> (Corollary 3.5): when nuisance variance
-          γ̃<sub>y</sub> is large, CP must reconstruct high-variance noise,
-          drowning the shared signal. CA aligns directions only and is immune.
-        </p>
       </div>
       <div>
         <img src="static/images/phase_diagram.png" alt="Phase diagram with CA and CP recovery boundaries" />
@@ -141,115 +130,110 @@ The resulting phase diagram partitions multimodal problems into four regimes: Bo
   </div>
 </section>
 
-<!-- ── REAL-WORLD RESULTS ─────────────────────────────────────────── -->
+<!-- ── COCO RESULTS ───────────────────────────────────────────────── -->
 <section>
   <div class="container">
-    <h2>Real-World Experiments</h2>
-    <div class="results-grid">
+    <h2>Real-World Experiments: COCO (Image–Caption)</h2>
+    <div class="fig-block" style="max-width:600px; margin:24px auto;">
+      <img src="static/images/coco_style_accuracy.png"
+           alt="COCO style-noise experiment results" />
+      <p class="fig-caption">
+        Image encoder trained with CA vs. CP on COCO, with increasing
+        style-transform noise on the image modality.
+        Phase estimation predicts the <em>CP only</em> regime — confirmed empirically.
+      </p>
+    </div>
+  </div>
+</section>
 
-      <div>
-        <h3>COCO (Image–Caption)</h3>
-        <div class="fig-block">
-          <img src="static/images/coco_style_accuracy.png"
-               alt="COCO style-noise experiment results" />
-        </div>
-        <p class="fig-caption">
-          Image encoder trained with CA vs. CP on COCO, with increasing
-          style-transform noise on the image modality.
-          Phase estimation predicts the <em>CP only</em> regime — confirmed empirically.
-        </p>
-      </div>
+<!-- ── ASTRO RESULTS ──────────────────────────────────────────────── -->
+<section>
+  <div class="container">
+    <h2>Real-World Experiments: Astrophysics (LAMOST × Kepler &amp; TESS)</h2>
 
-      <div>
-        <h3>Astrophysics (LAMOST × Kepler &amp; TESS)</h3>
-        <div class="fig-block">
-          <img src="static/images/phase_diagnostics.png"
-               alt="Astrophysical phase diagnostics: CCA and CP spectra" />
-          <p class="fig-caption">
-            CCA and regression-matrix spectra for LAMOST × Kepler (top) and LAMOST × TESS (bottom).
-            Signal (green) and nuisance (pink) components classified by elbow detection on the cumulative R² curve.
-          </p>
-        </div>
+    <table class="astro-table">
+      <caption>
+        Cross-modal results, mean ± std over 5 seeds. Best per row in <strong>bold</strong>.<br/>
+        <em>Kepler (Both, Δ̂<sub>CA</sub>=1.13, Δ̂<sub>CP</sub>=2.22):</em>
+        at least one cross-modal method matches or beats the best unimodal baseline on every target.<br/>
+        <em>TESS (Neither, Δ̂<sub>CA</sub>, Δ̂<sub>CP</sub> &lt; 1):</em>
+        no cross-modal method beats LAMOST-only on any target.
+      </caption>
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th>CA</th>
+          <th>CP</th>
+          <th>CP<sub>rev</sub></th>
+          <th>LAMOST</th>
+          <th>Photometry</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="section-header">
+          <td colspan="6">LAMOST × Kepler — <em>Both</em> regime</td>
+        </tr>
+        <tr>
+          <td>Binarity (bal. acc.)</td>
+          <td>0.802±0.009</td>
+          <td><strong>0.814±0.006</strong></td>
+          <td>0.751±0.004</td>
+          <td><strong>0.814</strong></td>
+          <td>0.731</td>
+        </tr>
+        <tr>
+          <td>log <em>g</em> (R²)</td>
+          <td>0.956±0.003</td>
+          <td><strong>0.976±0.001</strong></td>
+          <td>0.639±0.004</td>
+          <td><strong>0.977</strong></td>
+          <td>0.542</td>
+        </tr>
+        <tr>
+          <td>Age (R²)</td>
+          <td><strong>0.620±0.001</strong></td>
+          <td>0.434±0.006</td>
+          <td>0.497±0.039</td>
+          <td>0.431</td>
+          <td>0.470</td>
+        </tr>
+        <tr class="section-header">
+          <td colspan="6">LAMOST × TESS — <em>Neither</em> regime</td>
+        </tr>
+        <tr>
+          <td>Binarity (bal. acc.)</td>
+          <td>0.756±0.022</td>
+          <td>0.763±0.011</td>
+          <td>0.626±0.010</td>
+          <td><strong>0.779</strong></td>
+          <td>0.604</td>
+        </tr>
+        <tr>
+          <td>log <em>g</em> (R²)</td>
+          <td>0.929±0.005</td>
+          <td>0.939±0.001</td>
+          <td>−0.312±0.001</td>
+          <td><strong>0.942</strong></td>
+          <td>−0.312</td>
+        </tr>
+        <tr>
+          <td>Age (R²)</td>
+          <td>0.431±0.029</td>
+          <td>0.396±0.064</td>
+          <td>−0.072±0.004</td>
+          <td><strong>0.503</strong></td>
+          <td>−0.037</td>
+        </tr>
+      </tbody>
+    </table>
 
-        <div style="overflow-x:auto; margin-top:24px;">
-          <table class="astro-table">
-            <caption>
-              Cross-modal results, mean ± std over 5 seeds. Best per row in <strong>bold</strong>.<br/>
-              <em>Kepler (Both, Δ̂<sub>CA</sub>=1.13, Δ̂<sub>CP</sub>=2.22):</em>
-              at least one cross-modal method matches or beats the best unimodal baseline on every target.<br/>
-              <em>TESS (Neither, Δ̂<sub>CA</sub>, Δ̂<sub>CP</sub> &lt; 1):</em>
-              no cross-modal method beats LAMOST-only on any target.
-            </caption>
-            <thead>
-              <tr>
-                <th>Task</th>
-                <th>CA</th>
-                <th>CP</th>
-                <th>CP<sub>rev</sub></th>
-                <th>LAMOST</th>
-                <th>Photometry</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="section-header">
-                <td colspan="6">LAMOST × Kepler — <em>Both</em> regime</td>
-              </tr>
-              <tr>
-                <td>Binarity (bal. acc.)</td>
-                <td>0.802±0.009</td>
-                <td><strong>0.814±0.006</strong></td>
-                <td>0.751±0.004</td>
-                <td><strong>0.814</strong></td>
-                <td>0.731</td>
-              </tr>
-              <tr>
-                <td>log <em>g</em> (R²)</td>
-                <td>0.956±0.003</td>
-                <td><strong>0.976±0.001</strong></td>
-                <td>0.639±0.004</td>
-                <td><strong>0.977</strong></td>
-                <td>0.542</td>
-              </tr>
-              <tr>
-                <td>Age (R²)</td>
-                <td><strong>0.620±0.001</strong></td>
-                <td>0.434±0.006</td>
-                <td>0.497±0.039</td>
-                <td>0.431</td>
-                <td>0.470</td>
-              </tr>
-              <tr class="section-header">
-                <td colspan="6">LAMOST × TESS — <em>Neither</em> regime</td>
-              </tr>
-              <tr>
-                <td>Binarity (bal. acc.)</td>
-                <td>0.756±0.022</td>
-                <td>0.763±0.011</td>
-                <td>0.626±0.010</td>
-                <td><strong>0.779</strong></td>
-                <td>0.604</td>
-              </tr>
-              <tr>
-                <td>log <em>g</em> (R²)</td>
-                <td>0.929±0.005</td>
-                <td>0.939±0.001</td>
-                <td>−0.312±0.001</td>
-                <td><strong>0.942</strong></td>
-                <td>−0.312</td>
-              </tr>
-              <tr>
-                <td>Age (R²)</td>
-                <td>0.431±0.029</td>
-                <td>0.396±0.064</td>
-                <td>−0.072±0.004</td>
-                <td><strong>0.503</strong></td>
-                <td>−0.037</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
+    <div class="fig-block" style="margin-top:40px;">
+      <img src="static/images/phase_diagnostics.png"
+           alt="Astrophysical phase diagnostics: CCA and CP spectra" />
+      <p class="fig-caption">
+        CCA and regression-matrix spectra for LAMOST × Kepler (top) and LAMOST × TESS (bottom).
+        Signal (green) and nuisance (pink) components classified by elbow detection on the cumulative R² curve.
+      </p>
     </div>
   </div>
 </section>
