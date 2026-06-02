@@ -103,7 +103,7 @@ See [`src/astro/README.md`](src/astro/README.md) for full setup.
 
 ## Phase Diagram Estimation
 
-To estimate recovery regimes for your own dataset:
+To estimate the CA and CP recovery regimes for your own dataset:
 ```bash
 python src/analyze_phase_diagram.py --modality_x /path/to/X.npy --modality_y /path/to/Y.npy
 ```
