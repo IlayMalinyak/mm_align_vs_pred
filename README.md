@@ -3,7 +3,7 @@
 
 <div align="center">
 
-[![Paper](https://img.shields.io/badge/paper-arxiv-red)](TODO)
+[![Paper](https://img.shields.io/badge/paper-arxiv-red)](https://arxiv.org/abs/2606.11190)
 [![HuggingFace](https://img.shields.io/badge/🤗-dataset-yellow)](https://huggingface.co/datasets/Ilayk/mm_align_vs_pred)
 [![Website](https://img.shields.io/badge/project-website-blue)](https://ilaymalinyak.github.io/mm_align_vs_pred/)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/IlayMalinyak/mm_align_vs_pred/blob/main/notebooks/interactive_linear_experiment_colab.ipynb)
