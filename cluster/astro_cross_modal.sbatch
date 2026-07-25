@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -l
 #SBATCH --job-name=astro_cross_modal
 #SBATCH --nodes=1
 #SBATCH --ntasks=1

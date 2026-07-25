@@ -113,9 +113,6 @@ def _plot_panel(ax, sv, sum_r2, is_signal, delta_val, delta_name,
     n_sig = int(is_signal.sum())
     if delta_val == 0.0 and n_sig == 0:
         delta_str = r'$\hat{\Delta}_{' + delta_name + r'}$ undefined'
-    elif delta_val < 1:
-        delta_str = (r'$\hat{\Delta}_{' + delta_name +
-                     r'}$ = ' + f'{delta_val:.2f} < 1')
     else:
         delta_str = (r'$\hat{\Delta}_{' + delta_name +
                      r'}$ = ' + f'{delta_val:.2f}')

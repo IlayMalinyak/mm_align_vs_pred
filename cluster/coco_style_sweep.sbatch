@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -l
 #SBATCH --job-name=coco_style_sweep
 #SBATCH --nodes=1
 #SBATCH --ntasks=1

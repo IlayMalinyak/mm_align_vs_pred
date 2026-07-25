@@ -637,21 +637,31 @@ def _cca_analysis(Z1, Z2, labels, n_components, folds, reg=1e-6,
 
     nu_hat = _aggregate_nuisance(phi[is_nuisance]) if is_nuisance.any() else 0.0
 
+    # Proposition 3.2 recovery count r̂_CA (read-off; classification untouched)
+    rec = recovery_count(phi, is_signal)
+
     # Per-method derived quantities
     methods = {}
     for mname, cls in all_cls.items():
         m_sig = cls['is_signal']
         m_nui = ~m_sig
         m_nu = _aggregate_nuisance(phi[m_nui]) if m_nui.any() else 0.0
+        m_rec = recovery_count(phi, m_sig)
         methods[mname] = {
             'is_signal': m_sig, 'n_signal': cls['n_signal'],
             'elbow_strength': cls['elbow_strength'], 'elbow_r2': cls['elbow_r2'],
             'nu_hat': m_nu,
+            'r_hat': m_rec['r_hat'], 'floor': m_rec['floor'],
+            'floor_index': m_rec['floor_index'],
         }
 
     return {
         'W_cca': W_cca,
         'canonical_correlations': phi,
+        'r_hat': rec['r_hat'], 'floor': rec['floor'],
+        'floor_index': rec['floor_index'],
+        'signal_indices': rec['signal_indices'],
+        'signal_values': rec['signal_values'],
         'r2_matrix': r2_matrix,
         'sum_r2': classification['sum_r2'],
         'is_signal': is_signal,
@@ -734,6 +744,9 @@ def _cp_direct_analysis(Z1, Z2, labels, n_components, folds, reg=1e-6,
     else:
         delta_cp_direct = 0.0
 
+    # Proposition 3.2 recovery count r̂_CP (read-off; classification untouched)
+    rec = recovery_count(sigma_a, is_signal)
+
     # Per-method deltas
     methods = {}
     for mname, cls in all_cls.items():
@@ -745,14 +758,21 @@ def _cp_direct_analysis(Z1, Z2, labels, n_components, folds, reg=1e-6,
             m_delta = float('inf')
         else:
             m_delta = 0.0
+        m_rec = recovery_count(sigma_a, m_sig)
         methods[mname] = {
             'is_signal': m_sig, 'n_signal': cls['n_signal'],
             'elbow_strength': cls['elbow_strength'], 'elbow_r2': cls['elbow_r2'],
             'delta_cp_direct': m_delta,
+            'r_hat': m_rec['r_hat'], 'floor': m_rec['floor'],
+            'floor_index': m_rec['floor_index'],
         }
 
     return {
         'singular_values': sigma_a,
+        'r_hat': rec['r_hat'], 'floor': rec['floor'],
+        'floor_index': rec['floor_index'],
+        'signal_indices': rec['signal_indices'],
+        'signal_values': rec['signal_values'],
         'r2_matrix': r2_matrix,
         'sum_r2': classification['sum_r2'],
         'is_signal': is_signal,
@@ -762,6 +782,52 @@ def _cp_direct_analysis(Z1, Z2, labels, n_components, folds, reg=1e-6,
         'delta_cp_direct': delta_cp_direct,
         'methods': methods,
     }
+
+
+def recovery_count(spectrum, is_signal):
+    """Proposition 3.2 recovery count r̂ — pure read-off from an existing
+    signal/nuisance classification. DOES NOT alter classification.
+
+        floor = max(spectrum[nuisance])
+        r̂     = |{ i in signal : spectrum[i] > floor }|
+
+    Returns dict:
+        r_hat         : int      — # signal components strictly above the floor
+        k_hat         : int      — # signal components (|signal|)
+        floor         : float    — max nuisance spectral value (the floor)
+        floor_index   : int      — ORIGINAL component index of argmax nuisance
+        signal_indices: (k,) int — signal component indices, sorted by spectrum desc
+        signal_values : (k,) float — corresponding spectral values (desc)
+    """
+    spectrum = np.asarray(spectrum, dtype=float)
+    is_signal = np.asarray(is_signal, dtype=bool)
+    is_nuis = ~is_signal
+    k_hat = int(is_signal.sum())
+
+    if is_nuis.any():
+        nuis_idx = np.where(is_nuis)[0]
+        j = int(nuis_idx[np.argmax(spectrum[nuis_idx])])
+        floor = float(spectrum[j])
+        floor_index = j
+    else:
+        floor = float('-inf')   # no nuisance ⇒ every signal component clears it
+        floor_index = -1
+
+    if k_hat == 0:
+        return {'r_hat': 0, 'k_hat': 0, 'floor': floor, 'floor_index': floor_index,
+                'signal_indices': np.array([], dtype=int),
+                'signal_values': np.array([], dtype=float)}
+
+    sig_idx = np.where(is_signal)[0]
+    order = np.argsort(spectrum[sig_idx])[::-1]  # descending
+    sig_idx_sorted = sig_idx[order]
+    sig_vals_sorted = spectrum[sig_idx_sorted]
+    r_hat = int(np.sum(sig_vals_sorted > floor))
+
+    return {'r_hat': r_hat, 'k_hat': k_hat, 'floor': floor,
+            'floor_index': floor_index,
+            'signal_indices': sig_idx_sorted,
+            'signal_values': sig_vals_sorted}
 
 
 def _compute_direct_deltas(cca_result, cp_direct_result):
@@ -990,6 +1056,9 @@ def estimate_parameters(Z1, Z2, labels, n_components=50, cv=5,
 
     result = dict(primary)
     result.update({
+        # Proposition 3.2 recovery counts (read-off from CCA / A-SVD spectra)
+        'r_hat_ca': cca['r_hat'],
+        'r_hat_cp': cp_direct['r_hat'],
         'svd_x': svd_x,
         'svd_y': svd_y,
         'pls': pls,
