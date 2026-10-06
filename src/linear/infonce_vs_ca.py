@@ -188,7 +188,7 @@ def main():
         lines.append(f"| {nu:.3f} | " + " | ".join(cells) + " |")
 
     # crossing points (first ν where mean metric > 0.5)
-    lines.append("\n**Failure point** (first ν where mean subspace distance crosses 0.5):\n")
+    lines.append("\n**Failure point** (convention: first grid ν where mean subspace distance is strictly > 0.5):\n")
     for c, lbl in zip(cols, ['CA', 'CP', 'InfoNCE(τ=0.05)', 'InfoNCE(τ=0.1)', 'InfoNCE(τ=0.5)']):
         arr = np.array(means[c])
         cross = np.where(arr > 0.5)[0]

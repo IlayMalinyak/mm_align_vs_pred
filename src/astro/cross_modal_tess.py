@@ -1291,9 +1291,15 @@ def main():
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
 
+    # Seed (and SLURM array task id) in the dir name: minute-resolution
+    # timestamps collide across concurrent array tasks.
     timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M')
+    run_tag = f"{timestamp}_s{args.seed}"
+    task_id = os.environ.get('SLURM_ARRAY_TASK_ID')
+    if task_id is not None:
+        run_tag += f"_t{task_id}"
     if args.output_dir is None:
-        args.output_dir = os.path.join(DEFAULT_CONFIG['output_dir'], timestamp)
+        args.output_dir = os.path.join(DEFAULT_CONFIG['output_dir'], run_tag)
     os.makedirs(args.output_dir, exist_ok=True)
     print(f"Output directory: {args.output_dir}")
 

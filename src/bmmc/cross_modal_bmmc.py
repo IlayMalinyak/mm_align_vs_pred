@@ -654,8 +654,15 @@ def main():
 
     config     = dict(DEFAULT_CONFIG)
     output_dir = args.output_dir or config['output_dir']
+    # Include seed (and SLURM array task id) in the dir name: minute-resolution
+    # timestamps collide across concurrent array tasks (job 125574 seeds 0-2 and
+    # job 125623 seeds 0-2 overwrote each other).
     timestamp  = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')
-    output_dir = os.path.join(output_dir, timestamp)
+    run_tag    = f"{timestamp}-s{args.seed}"
+    task_id    = os.environ.get('SLURM_ARRAY_TASK_ID')
+    if task_id is not None:
+        run_tag += f"-t{task_id}"
+    output_dir = os.path.join(output_dir, run_tag)
     os.makedirs(output_dir, exist_ok=True)
     print(f"Output: {output_dir}")
 
