@@ -31,7 +31,7 @@ The answer is a **phase diagram** over (κ, ν) — signal strength vs. nuisance
 | **CP only** | ✗ | ✓ |
 | **Neither** | ✗ | ✗ |
 
-We validate on synthetic vision datasets (dSprites, Shapes3D), image-caption data (COCO), and real astrophysical data (LAMOST × Kepler/TESS spectra).
+We validate on synthetic vision datasets (dSprites, Shapes3D), image-caption data (COCO), real astrophysical data (LAMOST × Kepler/TESS spectra), and single-cell multi-omics (CITE-seq BMMC, RNA × surface protein).
 
 ---
 
@@ -43,6 +43,7 @@ We validate on synthetic vision datasets (dSprites, Shapes3D), image-caption dat
 | **Shapes3D** | Auto-downloaded from [Google](https://storage.googleapis.com/3d-shapes/3dshapes.h5) |
 | **COCO** | `pip install pycocotools` + standard download |
 | **Astro** | Pretrained encoders & cached features on [HuggingFace](https://huggingface.co/datasets/Ilayk/mm_align_vs_pred) |
+| **BMMC (CITE-seq)** | NeurIPS 2021 multimodal single-cell benchmark, CITE-seq BMMC `.h5ad` ([GEO GSE194122](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE194122)) + the [scGPT](https://github.com/bowang-lab/scGPT) whole-human checkpoint |
 
 ---
 
@@ -99,14 +100,38 @@ python -m src.astro.cross_modal --mode all --use_cached_features
 ```
 See [`src/astro/README.md`](src/astro/README.md) for full setup.
 
+**Single-cell** (CITE-seq BMMC: RNA × ADT protein, SLURM, needs `scgpt`):
+
+~90k bone-marrow cells, RNA as frozen scGPT embeddings (512-d) × raw CLR ADT abundance (134 proteins).
+The task is 44-class cell-type classification with a donor-based split (6 train / 1 val / 2 test donors).
+```bash
+sbatch cluster/bmmc_cross_modal.sbatch   # Stage 0 caches scGPT RNA embeddings, then trains CA / CP / CP← (5-seed array)
+sbatch cluster/bmmc_phase.sbatch         # phase estimation (Δ̂_CA, Δ̂_CP) + diagnostics plot
+```
+The data paths (`.h5ad`, cached embeddings, scGPT checkpoint) are set at the top of
+`src/bmmc/bmmc_dataset.py` and `src/bmmc/cross_modal_bmmc.py`; edit them for your machine.
+An optional variant with a pretrained ADT encoder is in `src/bmmc/pretrain_adt.py` and
+`cluster/bmmc_{pretrain_adt,cross_modal_pretrained,phase_pretrained}.sbatch`.
+
+Expected result: the *Neither* regime (Δ̂_CA ≈ 0.67, Δ̂_CP ≈ 0.26). CA (0.606) > CP (0.572) > CP← (0.524)
+in balanced accuracy, but no trained head beats concatenating the frozen unimodal embeddings (0.622).
+
 ---
 
 ## Phase Diagram Estimation
 
-To estimate the CA and CP recovery regimes for your own dataset:
-```bash
-python src/analyze_phase_diagram.py --modality_x /path/to/X.npy --modality_y /path/to/Y.npy
+To estimate the CA and CP recovery regimes for your own dataset (paired embeddings plus labels for a small subsample):
+```python
+import sys; sys.path.insert(0, "src")
+from analyze_phase_diagram import estimate_parameters
+
+# X: (n, d_x) source embeddings, Y: (n, d_y) target embeddings (paired rows, centered)
+# labels: (n, L) one-hot or continuous labels for the same samples
+res = estimate_parameters(X, Y, labels, n_components=50)
+print(res["delta_ca_direct"], res["delta_cp_direct"])   # > 1  =>  that objective recovers
+print(res["r_hat_ca"], res["r_hat_cp"])                 # recovery counts (partial vs. complete failure)
 ```
+`python src/analyze_phase_diagram.py <linear|dsprites|shapes3d|imagenet>` reruns the estimation for the paper's experiments.
 
 ---
 

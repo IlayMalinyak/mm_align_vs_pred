@@ -76,13 +76,26 @@
   <div class="container">
     <h2>Abstract</h2>
     <div class="abstract-box">
-      Cross-modal alignment (CA) and cross-modal prediction (CP) are the dominant paradigms for multimodal representation learning, yet there is no systematic understanding of when each succeeds, when each fails, and when cross-modal 
-training helps at all --- a gap that leaves practitioners, especially in scientific domains like biomedicine or astrophysics, with heterogeneous instruments and multiple levels of organization and measurement, unable to diagnose why standard methods
- underperform the best single modality. We develop a unified linear framework that addresses both questions. Under a spiked signal-plus-noise model with structured cross-modal nuisance correlation, we derive separation ratios for both objectives that
-  expose complementary failure modes: alignment whitens each modality and fails when nuisance is strongly correlated across views; prediction encodes whatever is cross-predictable through a one-sided whitening, with recovery governed by source-modality quality.
-The resulting phase diagram partitions multimodal problems into four regimes: Both, CA only, CP only, and Neither. We present a data-driven procedure to locate real-world datasets in this diagram using a small labeled subsample, identifying the preferred objective
- and prediction direction before any cross-modal training. Experiments on synthetic data, stereo-vision benchmarks, image--caption pairs, and real astrophysical data validate the predictions in the nonlinear regime, including the Neither regime where cross-modal training
-  is actively harmful. Our framework lets practitioners diagnose their multimodal problem and choose the right objective before committing to training.
+      Cross-modal alignment (CA) and cross-modal prediction (CP) are the dominant paradigms for
+      multimodal representation learning, yet there is no systematic understanding of when each
+      succeeds and when each fails, a gap that leaves practitioners, especially in scientific
+      domains with heterogeneous instruments and multiple levels of measurement, unable to
+      diagnose why standard methods underperform the best single modality. We study both
+      objectives under a spiked signal-plus-noise model with structured cross-modal nuisance
+      correlation, the ingredient that breaks the classical recovery guarantees, and derive
+      separation ratios that expose complementary failure modes: alignment whitens each modality
+      and fails when nuisance is strongly correlated across views; prediction encodes whatever is
+      cross-predictable through a one-sided whitening, with recovery governed by source-modality
+      quality. The resulting phase diagram partitions multimodal problems into four regimes &mdash;
+      Both, CA only, CP only, and Neither &mdash; refined by a recovery count that separates partial
+      recovery from complete failure. We present a data-driven procedure to locate real-world
+      datasets in this diagram using a small labeled subsample, identifying the preferred
+      objective and prediction direction before any cross-modal training, and identifying when no
+      objective in the CA/CP family can improve on the stronger modality alone. Experiments on
+      synthetic data, stereo-vision benchmarks, image&ndash;caption pairs, and two real scientific
+      domains, astronomy and single-cell multi-omics, validate the predictions in the
+      nonlinear regime, including both faces of the Neither regime. Code to reproduce the results
+      is available at <a href="https://github.com/IlayMalinyak/mm_align_vs_pred" target="_blank">https://github.com/IlayMalinyak/mm_align_vs_pred</a>.
     </div>
   </div>
 </section>
@@ -246,7 +259,7 @@ The resulting phase diagram partitions multimodal problems into four regimes: Bo
       <caption>
         Astrophysical cross-modal results, mean ± std over 5 seeds.
         Best per row in <strong>bold</strong> (ties within seed std co-bolded).
-        <em>Kepler (Both, \(\hat{\DCA}{=}1.13\), \(\hat{\DCP}{=}2.22\)):</em> at least
+        <em>Kepler (Both, \(\hat{\DCA}{=}1.08\), \(\hat{\DCP}{=}2.29\)):</em> at least
         one cross-modal method matches or beats the best unimodal baseline on
         every target; CP preserves LAMOST's ceiling where LAMOST dominates,
         CA captures photometric signal where LAMOST is weak.
@@ -325,7 +338,7 @@ The resulting phase diagram partitions multimodal problems into four regimes: Bo
     </table>
 
     <div class="fig-block" style="margin-top:40px;">
-      <img src="static/images/phase_diagnostics.png"
+      <img src="static/images/phase_diagnostics_934.png"
            alt="Astrophysical phase diagnostics: CCA and CP spectra" />
       <p class="fig-caption">
         Each panel shows the sorted singular values (gray bars, left axis) and
@@ -335,7 +348,7 @@ The resulting phase diagram partitions multimodal problems into four regimes: Bo
         \(\max_j \hat{\nu}_j\) (CCA panels) or \(\max_j \hat{\xi}_j\) (\(\Ab\)-SVD panels);
         \(\hat{\Delta} > 1\) iff every classified signal singular value exceeds the nuisance floor.
         <strong>Top:</strong> LAMOST × Kepler — both decompositions have signal components above the nuisance floor
-        (\(\hat{\DCA} = 1.13\), \(\hat{\DCP} = 2.22\); Both regime).
+        (\(\hat{\DCA} = 1.08\), \(\hat{\DCP} = 2.29\); Both regime).
         <strong>Bottom:</strong> LAMOST × TESS — no CCA component predicts \(\log g\) above noise
         (\(R^2 \approx 0\) across all components, zero signal detected); the
         \(\Ab\)-SVD has one candidate signal component but below the nuisance floor.
@@ -348,9 +361,93 @@ The resulting phase diagram partitions multimodal problems into four regimes: Bo
   </div>
 </section>
 
+<!-- ── BMMC RESULTS ───────────────────────────────────────────────── -->
+<section>
+  <div class="container">
+    <h2>Real-World Experiments: Single-Cell (CITE-seq RNA × Protein)</h2>
+    <p>
+      We test the framework on the NeurIPS 2021 CITE-seq bone-marrow (BMMC) dataset: ~90k cells
+      measured jointly by RNA (frozen scGPT embeddings) and ADT surface-protein abundance
+      (134 proteins). The task is cell-type classification (44 classes, balanced accuracy) under a
+      donor-based split (6 train / 1 val / 2 test donors). CA is VICReg between projected RNA and ADT
+      embeddings; CP predicts ADT from RNA, and CP<sub>rev</sub> predicts RNA from ADT.
+    </p>
+    <p>
+      Our phase estimation places BMMC in the <em>Neither</em> regime
+      (\(\hat{\DCA} = 0.67\), \(\hat{\DCP} = 0.26\)): both spectra show only partial recovery,
+      with the nuisance floor set by donor/batch technical variation.
+      The trained models agree: the ordering CA &gt; CP &gt; CP<sub>rev</sub> holds on every seed, but no
+      trained cross-modal head beats simply concatenating the frozen unimodal embeddings.
+    </p>
+
+    <table class="astro-table">
+      <caption>
+        BMMC cell-type classification, balanced accuracy, mean ± std over 5 seeds. Each column is a
+        separate training run (CA, CP, or CP<sub>rev</sub>) with its own unimodal and frozen-concatenation
+        baselines. <em>Neither</em> regime: the trained head stays below frozen concatenation in every run.
+      </caption>
+      <thead>
+        <tr>
+          <th>Representation</th>
+          <th>CA run</th>
+          <th>CP run</th>
+          <th>CP<sub>rev</sub> run</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>RNA only</td>
+          <td>0.584±0.043</td>
+          <td>0.584±0.043</td>
+          <td>0.584±0.043</td>
+        </tr>
+        <tr>
+          <td>ADT only</td>
+          <td>0.558±0.040</td>
+          <td>0.507±0.075</td>
+          <td>0.525±0.051</td>
+        </tr>
+        <tr>
+          <td>Frozen concat</td>
+          <td><strong>0.622±0.047</strong></td>
+          <td><strong>0.608±0.063</strong></td>
+          <td><strong>0.606±0.051</strong></td>
+        </tr>
+        <tr>
+          <td>Trained head</td>
+          <td>0.606±0.030</td>
+          <td>0.572±0.034</td>
+          <td>0.524±0.048</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
 <!-- ── METHOD: PHASE ESTIMATION ──────────────────────────────────── -->
 <section>
   <div class="container">
+    <h2>Estimating Your Phase</h2>
+    <p>
+      Given paired embeddings from two modalities and labels for a small subsample, our estimator
+      places a dataset in the phase diagram before any cross-modal training. It computes
+      \(\hat{\DCA}\) from the CCA spectrum (the singular values of \(C\)) and \(\hat{\DCP}\) from the
+      singular values of \(A = \Sigma_{yx}\Sigma_{xx}^{-1/2}\). Each component is classified as signal
+      or nuisance by its cross-validated \(R^2\) against the labels. A ratio above one means that
+      objective recovers the signal. The recovery count \(\hat{r}\) separates partial recovery
+      from complete failure.
+    </p>
+    <br/>
+    <pre class="bibtex-box">import sys; sys.path.insert(0, "src")
+from analyze_phase_diagram import estimate_parameters
+
+# X: (n, d_x) source embeddings, Y: (n, d_y) target embeddings (paired rows, centered)
+# labels: (n, L) one-hot or continuous labels for the same samples
+res = estimate_parameters(X, Y, labels, n_components=50)
+print(res["delta_ca_direct"], res["delta_cp_direct"])   # > 1  =>  that objective recovers
+print(res["r_hat_ca"], res["r_hat_cp"])                 # recovery counts</pre>
+    <br/>
+    <p>
       Try it interactively in the
       <a href="https://colab.research.google.com/github/IlayMalinyak/mm_align_vs_pred/blob/main/notebooks/interactive_linear_experiment_colab.ipynb" target="_blank">
         Colab notebook
